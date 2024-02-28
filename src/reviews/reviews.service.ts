@@ -1,26 +1,78 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { Review } from './entities/review.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { IReview } from './entities/interface/reviews.interface';
+import IResponse from 'src/utils/interface/response.interface';
+import { Sequelize } from 'sequelize-typescript';
+import { IFindAllResponse } from './interface/response.interface';
 
 @Injectable()
 export class ReviewsService {
-  create(createReviewDto: CreateReviewDto) {
-    return 'This action adds a new review';
+  constructor(
+    @InjectModel(Review)
+    private readonly reviewRepository: typeof Review,
+    private readonly sequelize: Sequelize,
+  ) { }
+
+  async createReview(review: Omit<IReview, 'id'>): Promise<IResponse> {
+    return await this.reviewRepository.create(review)
+      .then(() => {
+        return {
+          statusCode: 201,
+          message: 'Review subida con Exito!.'
+        }
+      }).catch((error: NodeJS.ErrnoException) => {
+        throw new InternalServerErrorException(`Ocurrió un error en el servidor al intentar crear la nueva Review.\n${error.message}`)
+      });
   }
 
-  findAll() {
-    return `This action returns all reviews`;
+  async findAllReview(): Promise<IFindAllResponse> {
+    return await this.reviewRepository.findAll({
+      /* order: this.sequelize.random(), */
+      limit: 20,
+    })
+      .then((data) => {
+        console.log(data);
+        
+        if (data.length) {
+          return {
+            statusCode: HttpStatus.OK,
+            data
+          }
+        } else {
+          return {
+            statusCode: HttpStatus.NO_CONTENT,
+            message: 'No se publicaron reviews hasta el momento.'
+          }
+        }
+      }).catch((error: NodeJS.ErrnoException) => {
+        throw new BadRequestException(`Ocurrió un error al solicitar las reviews existentes.\n${error.message}`)
+      });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} review`;
+  async findOneReview(id: number) {
+    try {
+
+    } catch (error) {
+
+    }
   }
 
-  update(id: number, updateReviewDto: UpdateReviewDto) {
-    return `This action updates a #${id} review`;
+  async updateReview(updateReviewDto: UpdateReviewDto) {
+    try {
+
+    } catch (error) {
+
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} review`;
+  async removeReview(id: number) {
+    try {
+
+    } catch (error) {
+
+    }
   }
 }
