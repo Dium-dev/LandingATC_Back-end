@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, ParseUUIDPipe } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
 @Controller('reviews')
 export class ReviewsController {
-  constructor(private readonly reviewsService: ReviewsService) { }
+  constructor(
+    private readonly reviewsService: ReviewsService,
+  ) { }
 
   @HttpCode(201)
   @Post()
@@ -15,24 +17,25 @@ export class ReviewsController {
     return await this.reviewsService.createReview(review);
   }
 
-  @HttpCode(200)
   @Get()
   async findAllReview() {
-    return this.reviewsService.findAllReview();
+    return await this.reviewsService.findAllReview()
   }
 
-  @Get('one')
-  async findOneReview() {
-
+  @Get(':id')
+  async findOneReview(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
+    return await this.reviewsService.findOneReview(id)
   }
 
   @Patch()
-  async updateReview(@Body() updateReviewDto: UpdateReviewDto) {
-    return this.reviewsService.updateReview(updateReviewDto);
+  async updateReview(@Body() updatenReview: UpdateReviewDto) {
+    return await this.reviewsService.updateReview(updatenReview);
   }
 
   @Delete(':id')
-  async removeReview(@Param('id') id: string) {
-    return this.reviewsService.removeReview(+id);
+  async removeReview(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.reviewsService.removeReview(id);
   }
 }

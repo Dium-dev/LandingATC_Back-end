@@ -6,7 +6,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { IReview } from './entities/interface/reviews.interface';
 import IResponse from 'src/utils/interface/response.interface';
 import { Sequelize } from 'sequelize-typescript';
-import { IFindAllResponse } from './interface/response.interface';
+import { IFindAllResponse, IFindOneResponse, IUpdateResponse } from './interface/response.interface';
 
 @Injectable()
 export class ReviewsService {
@@ -33,46 +33,54 @@ export class ReviewsService {
       /* order: this.sequelize.random(), */
       limit: 20,
     })
-      .then((data) => {
-        console.log(data);
-        
-        if (data.length) {
-          return {
-            statusCode: HttpStatus.OK,
-            data
-          }
-        } else {
-          return {
-            statusCode: HttpStatus.NO_CONTENT,
-            message: 'No se publicaron reviews hasta el momento.'
-          }
+      .then((data: IReview[] | []) => {
+        return {
+          statusCode: data.length ? HttpStatus.OK : HttpStatus.NO_CONTENT,
+          data: data.length ? data : undefined,
+          message: data.length ? undefined : 'No se publicaron reviews hasta el momento.'
         }
       }).catch((error: NodeJS.ErrnoException) => {
-        throw new BadRequestException(`Ocurrió un error al solicitar las reviews existentes.\n${error.message}`)
+        throw new InternalServerErrorException(`Ocurrió un error al solicitar las reviews existentes.\n${error.message}`)
       });
   }
 
-  async findOneReview(id: number) {
-    try {
-
-    } catch (error) {
-
-    }
+  async findOneReview(id: string): Promise<IFindOneResponse> {
+    return await this.reviewRepository.findByPk(id)
+      .then((data: IReview | null) => {
+        return {
+          statusCode: data ? HttpStatus.OK : HttpStatus.NO_CONTENT,
+          data: data ? data : undefined,
+          message: data ? undefined : 'No se encontró la review solicitada.'
+        }
+      }).catch((error: NodeJS.ErrnoException) => {
+        throw new InternalServerErrorException(`Ocurrió un error al solicitar el detalle de una reviews.\n${error.message}`)
+      });
   }
 
-  async updateReview(updateReviewDto: UpdateReviewDto) {
-    try {
-
-    } catch (error) {
-
-    }
+  async updateReview(updatenReview: IReview): Promise<IUpdateResponse> {
+    return await this.reviewRepository.update(updatenReview, { where: { id: updatenReview.id }, returning: true })
+      .then(([count, [data]]: [count: number, data: IReview[] | undefined]) => {
+        return {
+          statusCode: count ? HttpStatus.OK : HttpStatus.NO_CONTENT,
+          data: count ? data : undefined,
+          message: count ? 'Review actualizada con éxito!' : 'No se pudo actualizar/no se encontró la review solicitada.'
+        }
+      }).catch((error: NodeJS.ErrnoException) => {
+        throw new InternalServerErrorException(`Ocurrió un error al actualizar una reviews.\n${error.message}`)
+      });
   }
 
-  async removeReview(id: number) {
-    try {
+  async removeReview(id: string): Promise<IResponse> {
+    return await this.reviewRepository.destroy({ where: { id }, force: true })
+      .then((count) => {
+        console.log(count);
 
-    } catch (error) {
-
-    }
+        return {
+          statusCode: count ? HttpStatus.OK : HttpStatus.NOT_FOUND,
+          message: count ? 'Eliminado con éxito!' : 'No se pudo eliminar la review solicitada.'
+        }
+      }).catch((error: NodeJS.ErrnoException) => {
+        throw new InternalServerErrorException(`Ocurrió un error al eliminar una reviews.\n${error.message}`)
+      });
   }
 }
