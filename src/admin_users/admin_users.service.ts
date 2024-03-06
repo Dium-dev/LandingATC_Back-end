@@ -102,11 +102,4 @@ export class AdminUsersService {
       });
   }
 
-  update(id: number, updateAdminUserDto: UpdateAdminUserDto) {
-    return `This action updates a #${id} adminUser`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} adminUser`;
-  }
 }

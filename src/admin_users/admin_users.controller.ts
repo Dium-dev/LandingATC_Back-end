@@ -46,18 +46,18 @@ export class AdminUsersController {
     });
   }
 
-  @UseGuards(JwtAuthService)
+  /* @UseGuards(JwtAuthService)
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateAdminUserDto: UpdateAdminUserDto,
   ) {
-    return this.adminUsersService.update(+id, updateAdminUserDto);
+    return this.adminUsersService.update(id, updateAdminUserDto);
   }
 
   @UseGuards(JwtAuthService)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.adminUsersService.remove(+id);
-  }
+  } */
 }
