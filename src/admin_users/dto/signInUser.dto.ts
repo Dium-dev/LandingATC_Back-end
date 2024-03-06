@@ -1,14 +1,14 @@
-import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
-import { IAdminUser } from '../entities/admin_user.entity';
+import { IsNotEmpty, IsString, Matches } from 'class-validator';
 
-export class CreateAdminUserDto implements IAdminUser {
+export interface ISingIn {
+  thisUser: string;
+  pass: string;
+}
+
+export class SignInDto implements ISingIn {
   @IsNotEmpty()
   @IsString()
-  nickName: string;
-
-  @IsNotEmpty()
-  @IsEmail(undefined, { message: 'El formato del email no es valido' })
-  email: string;
+  thisUser: string;
 
   @IsNotEmpty()
   @Matches(
@@ -18,5 +18,5 @@ export class CreateAdminUserDto implements IAdminUser {
         'La contraseña debe ser de 8 a 15 caracteres, tener una mayúscula, una minúscula, un número y un carácter especial',
     },
   )
-  password: string;
+  pass: string;
 }

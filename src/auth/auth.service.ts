@@ -1,60 +1,73 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpStatus,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+  forwardRef,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtConf } from 'env.config';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
+import { Op } from 'sequelize';
 import { AdminUsersService } from 'src/admin_users/admin_users.service';
+import * as bcrypt from 'bcrypt';
+import {
+  AdminUser,
+  IAdminUser,
+} from 'src/admin_users/entities/admin_user.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { ISingIn } from 'src/admin_users/dto/signInUser.dto';
+import {
+  ISignInResponse,
+  ITokenPayload,
+} from './interface/responseAuth.interface';
 
 @Injectable()
-export class AuthService implements CanActivate {
-    constructor(
-        private readonly jwtService: JwtService,
-        @Inject(AdminUsersService)
-        private readonly usersService: AdminUsersService,
-    ) { }
+export class AuthService {
+  constructor(
+    private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => AdminUsersService))
+    private readonly usersService: AdminUsersService,
+    @InjectModel(AdminUser)
+    private readonly adminUserRepository: typeof AdminUser,
+  ) {}
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest();
-        const token = this.extractTokenFromHeader(request);
-        if (!token) {
-            throw new UnauthorizedException();
+  public async signIn({ thisUser, pass }: ISingIn): Promise<ISignInResponse> {
+    return await this.usersService
+      .findOneUser({
+        where: {
+          [Op.or]: [{ email: thisUser }, { nickName: thisUser }],
+        },
+      })
+      .then(async (user) => {
+        const comparePass = await bcrypt.compareSync(pass, user.user.password);
+        if (!comparePass) {
+          throw new UnauthorizedException();
         }
-        try {
-            const payload = await this.jwtService.verifyAsync(
-                token,
-                {
-                    secret: JwtConf.jwt_secret
-                }
-            );
-            // 💡 We're assigning the payload to the request object here
-            // so that we can access it in our route handlers
-            request['user'] = payload;
-        } catch {
-            throw new UnauthorizedException();
-        }
-        return true;
-    }
-
-    private extractTokenFromHeader(request: Request): string | undefined {
-        const [type, token] = request.headers.authorization?.split(' ') ?? [];
-        return type === 'Bearer' ? token : undefined;
-    }
-
-    async signIn(
-        username: string,
-        pass: string,
-    )/* : Promise<{ access_token: string }> */ {
-        /* const user = await this.usersService.findOne(username);
-        if (user?.password !== pass) {
-            throw new UnauthorizedException();
-        }
-        const payload = { userId: user.userId };
+        const payload: ITokenPayload = {
+          id: user.user.id,
+          nickName: user.user.nickName,
+        };
         return {
-            access_token: await this.jwtService.signAsync(payload),
-        }; */
-    }
+          statusCode: HttpStatus.OK,
+          access_token: await this.jwtService.signAsync(payload),
+        };
+      });
+  }
 
-    async logIn() {
-
-    }
+  public async logIn(newUser: Omit<IAdminUser, 'id'>): Promise<void> {
+    const salt = await bcrypt.genSalt(10);
+    const password = await bcrypt.hash(newUser.password, salt);
+    return await this.adminUserRepository
+      .create({ ...newUser, password })
+      .then((res) => {
+        return;
+      })
+      .catch((error: NodeJS.ErrnoException) => {
+        throw new InternalServerErrorException(error.message);
+      });
+  }
 }

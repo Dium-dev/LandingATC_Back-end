@@ -1,16 +1,19 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtModuleConfig } from './config/jwt.config';
 import { AdminUsersModule } from 'src/admin_users/admin_users.module';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { AdminUser } from 'src/admin_users/entities/admin_user.entity';
 
 @Module({
   imports: [
     JwtModule.register(JwtModuleConfig),
-    forwardRef(() => AdminUsersModule)
+    SequelizeModule.forFeature([AdminUser]),
+    forwardRef(() => AdminUsersModule),
   ],
-  controllers: [AuthController],
-  providers: [AuthService]
+  controllers: [],
+  providers: [AuthService],
+  exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

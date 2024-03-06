@@ -1,6 +1,6 @@
-import { HttpStatus } from "@nestjs/common";
+import { HttpStatus } from '@nestjs/common';
 
 export default interface IResponse {
-    statusCode: HttpStatus;
-    message?: string;
+  statusCode: HttpStatus;
+  message?: string;
 }
