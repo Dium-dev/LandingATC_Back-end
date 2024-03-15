@@ -43,10 +43,9 @@ export class AuthService {
         },
       })
       .then(async (user) => {
+        if (!user.user) throw new UnauthorizedException();
         const comparePass = await bcrypt.compareSync(pass, user.user.password);
-        if (!comparePass) {
-          throw new UnauthorizedException();
-        }
+        if (!comparePass) throw new UnauthorizedException();
         const payload: ITokenPayload = {
           id: user.user.id,
           nickName: user.user.nickName,

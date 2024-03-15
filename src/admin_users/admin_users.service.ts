@@ -18,6 +18,7 @@ import {
 } from './interface/responseAdminUser.interface';
 import { AuthService } from 'src/auth/auth.service';
 import { ISingIn } from './dto/signInUser.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminUsersService {
@@ -102,4 +103,50 @@ export class AdminUsersService {
       });
   }
 
+  async updateUser(user: IAdminUser): Promise<IResponse> {
+    let password;
+    if (user.password) {
+      const salt = await bcrypt.genSalt(10);
+      password = await bcrypt.hash(user.password, salt);
+    }
+    return await this.adminUserRepository
+      .update(
+        { ...user, password: user.password ? password : undefined },
+        { where: { id: user.id } },
+      )
+      .then(([res]) => {
+        return {
+          statusCode: res ? HttpStatus.OK : HttpStatus.CONFLICT,
+          message: res
+            ? 'Usuario actualizado con éxito!'
+            : 'Hubo un problema con las credenciales del usuario, intente nuevamente.',
+        };
+      })
+      .catch((error: NodeJS.ErrnoException) => {
+        throw new InternalServerErrorException(
+          `Ocurrió un error al intentar actualizar los datos del usuario.\n${error.message}`,
+        );
+      });
+  }
+
+  async removeUser(id: string): Promise<IResponse> {
+    return await this.adminUserRepository
+      .destroy({
+        where: { id },
+        force: true,
+      })
+      .then((res) => {
+        return {
+          statusCode: res ? HttpStatus.OK : HttpStatus.NOT_FOUND,
+          message: res
+            ? 'Usuario eliminado con éxito.'
+            : 'Usuario no encontrado.',
+        };
+      })
+      .catch((error: NodeJS.ErrnoException) => {
+        throw new InternalServerErrorException(
+          `Ocurrió un error al solicitar al eliminación de un usuario.\n${error.message}`,
+        );
+      });
+  }
 }
