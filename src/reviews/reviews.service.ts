@@ -44,7 +44,7 @@ export class ReviewsService {
   async findAllReview(): Promise<IFindAllResponse> {
     return await this.reviewRepository
       .findAll({
-        /* order: this.sequelize.random(), */
+        order: this.sequelize.random(),
         limit: 20,
       })
       .then((data: IReview[] | []) => {
@@ -104,10 +104,11 @@ export class ReviewsService {
 
   async removeReview(id: string): Promise<IResponse> {
     return await this.reviewRepository
-      .destroy({ where: { id }, force: true })
+      .destroy({
+        where: { id },
+        force: true,
+      })
       .then((count) => {
-        console.log(count);
-
         return {
           statusCode: count ? HttpStatus.OK : HttpStatus.NOT_FOUND,
           message: count

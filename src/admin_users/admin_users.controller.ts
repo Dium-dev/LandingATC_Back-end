@@ -19,7 +19,7 @@ import { JwtAuthService } from 'src/auth/jtwAuth.service';
 export class AdminUsersController {
   constructor(private readonly adminUsersService: AdminUsersService) {}
 
-  @UseGuards(JwtAuthService)
+  /* @UseGuards(JwtAuthService) */
   @Post('logIn')
   async logIn(@Body() newUser: CreateAdminUserDto): Promise<any> {
     return await this.adminUsersService.createUser(newUser);
@@ -46,18 +46,15 @@ export class AdminUsersController {
     });
   }
 
-  /* @UseGuards(JwtAuthService)
-  @Patch(':id')
-  update(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() updateAdminUserDto: UpdateAdminUserDto,
-  ) {
-    return this.adminUsersService.update(id, updateAdminUserDto);
+  @UseGuards(JwtAuthService)
+  @Patch()
+  async update(@Body() updateAdminUserDto: UpdateAdminUserDto) {
+    return await this.adminUsersService.updateUser(updateAdminUserDto);
   }
 
   @UseGuards(JwtAuthService)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.adminUsersService.remove(+id);
-  } */
+  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return await this.adminUsersService.removeUser(id);
+  }
 }
