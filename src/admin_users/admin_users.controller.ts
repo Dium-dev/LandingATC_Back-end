@@ -19,14 +19,14 @@ import { JwtAuthService } from 'src/auth/jtwAuth.service';
 export class AdminUsersController {
   constructor(private readonly adminUsersService: AdminUsersService) {}
 
-  /* @UseGuards(JwtAuthService) */
-  @Post('logIn')
-  async logIn(@Body() newUser: CreateAdminUserDto): Promise<any> {
+  @UseGuards(JwtAuthService)
+  @Post('signIn')
+  async signIn(@Body() newUser: CreateAdminUserDto): Promise<any> {
     return await this.adminUsersService.createUser(newUser);
   }
-
-  @Post('signIn')
-  async signIn(@Body() thisUser: SignInDto) {
+  
+  @Post('logIn')
+  async logIn(@Body() thisUser: SignInDto) {
     return await this.adminUsersService.validateUser(thisUser);
   }
 

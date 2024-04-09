@@ -31,7 +31,7 @@ export class AdminUsersService {
 
   async createUser(adminUser: Omit<IAdminUser, 'id'>): Promise<IResponse> {
     return await this.authService
-      .logIn(adminUser)
+      .signIn(adminUser)
       .then(() => {
         return {
           statusCode: HttpStatus.CREATED,
@@ -46,7 +46,7 @@ export class AdminUsersService {
   }
 
   async validateUser(adminUser: ISingIn) {
-    return await this.authService.signIn(adminUser);
+    return await this.authService.logIn(adminUser);
   }
 
   async findAllUsers(): Promise<IFindAllUserResponse> {
