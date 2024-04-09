@@ -34,8 +34,7 @@ export class AuthService {
     @InjectModel(AdminUser)
     private readonly adminUserRepository: typeof AdminUser,
   ) {}
-
-  public async signIn({ thisUser, pass }: ISingIn): Promise<ISignInResponse> {
+  public async logIn({ thisUser, pass }: ISingIn): Promise<ISignInResponse> {
     return await this.usersService
       .findOneUser({
         where: {
@@ -57,12 +56,12 @@ export class AuthService {
       });
   }
 
-  public async logIn(newUser: Omit<IAdminUser, 'id'>): Promise<void> {
+  public async signIn(newUser: Omit<IAdminUser, 'id'>): Promise<void> {
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(newUser.password, salt);
     return await this.adminUserRepository
       .create({ ...newUser, password })
-      .then((res) => {
+      .then(() => {
         return;
       })
       .catch((error: NodeJS.ErrnoException) => {
