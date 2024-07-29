@@ -41,4 +41,16 @@ export class Review extends Model implements IReview {
     allowNull: false,
   })
   date: Date;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  active: boolean;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  image: string;
 }

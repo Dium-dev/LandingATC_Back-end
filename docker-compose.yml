@@ -1,0 +1,38 @@
+services:
+  database:
+    container_name: "postgresdb"
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "lechu42831290"
+      POSTGRES_DB: "landing_atc"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  app:
+    depends_on:
+      - database
+    build: .
+    ports:
+      - 3005:3005
+    environment:
+      - HOST_PORT=3005
+      - SQL_HOST=database
+      - SQL_PORT=5432
+      - SQL_USERNAME=postgres
+      - SQL_PASSWORD=lechu42831290
+      - SQL_DATABASE=landing_atc
+    develop:
+      watch:
+        - path: ./package.json
+          action: rebuild
+        - path: ./package-lock.json
+          action: rebuild
+        - path: .
+          target: /app
+          action: sync
+    volumes:
+      - ./public/images/reviews:/app/public/images/reviews
+volumes:
+  postgres-data:

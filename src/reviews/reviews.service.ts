@@ -16,6 +16,8 @@ import {
   IFindOneResponse,
   IUpdateResponse,
 } from './interface/response.interface';
+import { writeFile } from 'src/utils/writeFile';
+import { deleteFile } from 'src/utils/deleteFile';
 
 @Injectable()
 export class ReviewsService {
@@ -25,18 +27,31 @@ export class ReviewsService {
     private readonly sequelize: Sequelize,
   ) {}
 
-  async createReview(review: Omit<IReview, 'id'>): Promise<IResponse> {
+  async createReview(
+    review: Omit<IReview, 'id'>,
+    image: Express.Multer.File,
+  ): Promise<IResponse> {
+    const filePath = await writeFile(review.user, image).catch(
+      (error: Error) => {
+        throw new InternalServerErrorException(error.message);
+      },
+    );
+
     return await this.reviewRepository
-      .create(review)
+      .create({
+        ...review,
+        image: image.originalname,
+      })
       .then(() => {
         return {
           statusCode: 201,
-          message: 'Review subida con Exito!.',
+          message: '¡Reseña subida con éxito!',
         };
       })
-      .catch((error: NodeJS.ErrnoException) => {
+      .catch(async (error: NodeJS.ErrnoException) => {
+        await deleteFile(filePath);
         throw new InternalServerErrorException(
-          `Ocurrió un error en el servidor al intentar crear la nueva Review.\n${error.message}`,
+          `Ocurrió un error en el servidor al intentar crear la nueva reseña.\n${error.message}`,
         );
       });
   }
