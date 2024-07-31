@@ -31,7 +31,7 @@ export class ReviewsService {
     review: Omit<IReview, 'id'>,
     image: Express.Multer.File,
   ): Promise<IResponse> {
-    const filePath = await writeFile(review.user, image).catch(
+    const { filePath, fileName } = await writeFile(review.user, image).catch(
       (error: Error) => {
         throw new InternalServerErrorException(error.message);
       },
@@ -40,7 +40,7 @@ export class ReviewsService {
     return await this.reviewRepository
       .create({
         ...review,
-        image: image.originalname,
+        image: fileName,
       })
       .then(() => {
         return {
