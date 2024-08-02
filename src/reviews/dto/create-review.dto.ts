@@ -31,4 +31,6 @@ export class CreateReviewDto implements IReview {
 
   @IsNotEmpty({ message: 'La propiedad $property debe contener algun dato' })
   active: boolean;
+
+  file: File;
 }
