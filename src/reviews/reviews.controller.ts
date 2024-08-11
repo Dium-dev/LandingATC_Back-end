@@ -59,8 +59,21 @@ export class ReviewsController {
 
   @UseGuards(JwtAuthService)
   @Patch()
-  async updateReview(@Body() updatenReview: UpdateReviewDto) {
-    return await this.reviewsService.updateReview(updatenReview);
+  @UseInterceptors(FileInterceptor('file'))
+  async updateReview(
+    @Body() updatenReview: UpdateReviewDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: 'image/*',
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return await this.reviewsService.updateReview(updatenReview, file);
   }
 
   @UseGuards(JwtAuthService)

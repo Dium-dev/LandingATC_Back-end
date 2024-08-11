@@ -14,5 +14,5 @@ export const writeFile = async (
     );
   });
 
-  return { filePath, fileName };
+  return fileName;
 };
