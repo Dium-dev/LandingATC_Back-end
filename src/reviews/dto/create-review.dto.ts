@@ -1,4 +1,10 @@
-import { IsEnum, IsISO8601, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsISO8601,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 import { RatingEnum } from '../entities/enum/reviews.enum';
 import { IReview } from '../entities/interface/reviews.interface';
 
@@ -22,4 +28,9 @@ export class CreateReviewDto implements IReview {
   @IsNotEmpty({ message: 'La propiedad $property debe contener algun dato.' })
   @IsISO8601({ strict: true })
   date: Date;
+
+  @IsNotEmpty({ message: 'La propiedad $property debe contener algun dato' })
+  active: boolean;
+
+  file: File;
 }

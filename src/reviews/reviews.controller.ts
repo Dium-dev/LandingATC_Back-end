@@ -9,11 +9,16 @@ import {
   HttpCode,
   ParseUUIDPipe,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { JwtAuthService } from 'src/auth/jtwAuth.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -22,8 +27,21 @@ export class ReviewsController {
   @UseGuards(JwtAuthService)
   @HttpCode(201)
   @Post()
-  async createReview(@Body() review: CreateReviewDto) {
-    return await this.reviewsService.createReview(review);
+  @UseInterceptors(FileInterceptor('file'))
+  async createReview(
+    @Body() review: CreateReviewDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: 'image/*',
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return await this.reviewsService.createReview(review, file);
   }
 
   @Get()
@@ -41,8 +59,21 @@ export class ReviewsController {
 
   @UseGuards(JwtAuthService)
   @Patch()
-  async updateReview(@Body() updatenReview: UpdateReviewDto) {
-    return await this.reviewsService.updateReview(updatenReview);
+  @UseInterceptors(FileInterceptor('file'))
+  async updateReview(
+    @Body() updatenReview: UpdateReviewDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: 'image/*',
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return await this.reviewsService.updateReview(updatenReview, file);
   }
 
   @UseGuards(JwtAuthService)

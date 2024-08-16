@@ -7,6 +7,8 @@ export interface IReview {
   rating?: RatingEnum;
   user?: string;
   date?: Date;
+  active?: boolean;
+  image?: string;
 }
 
-export interface IModelReview extends Model<IReview> {}
+export type IModelReview = Model<IReview>;
