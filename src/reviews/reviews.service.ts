@@ -61,7 +61,7 @@ export class ReviewsService {
   async findAllReview(): Promise<IFindAllResponse> {
     return await this.reviewRepository
       .findAll({
-        order: this.sequelize.random(),
+        order: [['user', 'ASC']],
         limit: 20,
       })
       .then((data: IReview[] | []) => {
